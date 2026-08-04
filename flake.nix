@@ -101,6 +101,10 @@
               };
             };
 
+          # See pkgs/mc-mujoco-with-kinova.nix — a near-total replacement (different upstream
+          # fork, materially different build architecture) rather than a simple src swap.
+          mc-mujoco = import ./pkgs/mc-mujoco-with-kinova.nix;
+
           tvm =
             { pkgs-final, ... }:
             {
