@@ -20,6 +20,7 @@
       mcRtcKinovaExternalForcesModule = { ... }: {
         packages = {
           mc-residual-estimation = ./pkgs/mc-residual-estimation.nix;
+          mc-ros-force-sensor = ./pkgs/mc-ros-force-sensor.nix;
           minimum-jerk-task = ./pkgs/minimum-jerk-task.nix;
           rokubimini-description = ./pkgs/rokubimini-description.nix;
           bota-driver-description = ./pkgs/bota-driver-description.nix;
