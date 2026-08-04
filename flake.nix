@@ -22,6 +22,7 @@
           mc-residual-estimation = ./pkgs/mc-residual-estimation.nix;
           minimum-jerk-task = ./pkgs/minimum-jerk-task.nix;
           rokubimini-description = ./pkgs/rokubimini-description.nix;
+          bota-driver-description = ./pkgs/bota-driver-description.nix;
           box-demo-controller = ./pkgs/box-demo-controller.nix;
         };
 
@@ -61,29 +62,44 @@
               };
             };
 
-          # No src override: mc-rtc-kinova-base's mc-kinova is already on main, which is a
-          # superset of the old topic/bota_ft_sensor branch (unified gen3.in.xacro compatible
-          # with Kinovarobotics/ros2_kortex's load_robot signature, whereas
-          # topic/bota_ft_sensor's own gen3_w_bota_FT_sensor.in.xacro is stale and calls
-          # load_robot with a "sim" param that macro no longer accepts). main's CMakeLists.txt
-          # auto-toggles WITH_BOTA_SENSOR based on whether rokubimini_description is found
-          # (find_description_package(rokubimini_description OPTIONAL)), so all we need here is
-          # to add rokubimini-description as a propagated dependency.
+          # topic/add-genA-bota registers KinovaBotaPegPlate (needed by
+          # collaborative_peg_in_hole_controller's config) plus the newer GenA Bota sensor
+          # variants — main doesn't have these robot module names at all. It looks up the Bota
+          # description data as find_description_package(bota_driver QUIET) rather than
+          # rokubimini_description (see bota-driver-description.nix).
           mc-kinova =
-            { pkgs-final, drv-prev, ... }:
+            { pkgs-final, ... }:
             {
-              propagatedBuildInputs = (drv-prev.propagatedBuildInputs or [ ]) ++ [
-                pkgs-final.rokubimini-description
+              src = pkgs-final.fetchFromGitHub {
+                owner = "mathieu-celerier";
+                repo = "mc_kinova";
+                rev = "topic/add-genA-bota";
+                hash = "sha256-gRTO2WGK26eYrw7Oh/lEyWis3F6hZGJ4ahfz71P6ntQ=";
+              };
+              propagatedBuildInputs = [
+                pkgs-final.mc-rtc
+                pkgs-final.kortex-description
+                pkgs-final.robotiq-description
+                pkgs-final.bota-driver-description
               ];
             };
 
           # No override: torqueModeDS is a stale/old topic branch (user's call) — the
           # external-forces stack just uses mc-rtc-kinova-base's main-branch mc-kortex as-is.
 
-          # No override: same story as mc-kinova above — mc-rtc-kinova-base's main-branch
-          # kinova-mj-description already includes the Bota-sensor xml/mc_mujoco variants
-          # (kinova_bota.xml, kinova_bota_ds4.xml etc.); bota_ft_sensor is the same kind of
-          # stale topic branch as mc_kortex's torqueModeDS.
+          # main-external-forces is the kinova_mj_description branch matching mc-kinova's
+          # topic/add-genA-bota — it has the MuJoCo xml for kinova_bota_peg_plate (and all the
+          # other GenA/PegPlate variants) that main doesn't.
+          kinova-mj-description =
+            { pkgs-final, ... }:
+            {
+              src = pkgs-final.fetchFromGitHub {
+                owner = "mathieu-celerier";
+                repo = "kinova_mj_description";
+                rev = "main-external-forces";
+                hash = "sha256-wGmwPxcMPRo6eWxeLlDxN20BiE3uxIe0OSXXcWpfca0=";
+              };
+            };
 
           tvm =
             { pkgs-final, ... }:
