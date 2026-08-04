@@ -25,6 +25,14 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ cmake ];
   propagatedBuildInputs = [ mc-rtc ];
 
+  # jrl-cmakemodules' install macro (as vendored by this repo's cmake/ submodule) bakes
+  # CMAKE_INSTALL_INCLUDEDIR straight into the exported target's INTERFACE_INCLUDE_DIRECTORIES
+  # without wrapping it in $<INSTALL_INTERFACE:...>. nixpkgs' cmake setup hook normally passes
+  # that as an absolute path (e.g. $out/include), which then gets double-concatenated with
+  # ${_IMPORT_PREFIX} by consumers (CMake Error: "Imported target ... includes non-existent
+  # path ${_IMPORT_PREFIX}/$out/include"). Forcing it relative here avoids the double-prefix.
+  cmakeFlags = [ "-DCMAKE_INSTALL_INCLUDEDIR=include" ];
+
   doCheck = false;
 
   meta = with lib; {
