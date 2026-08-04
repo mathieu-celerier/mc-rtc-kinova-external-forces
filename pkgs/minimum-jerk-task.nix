@@ -14,8 +14,11 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "mathieu-celerier";
     repo = "MinimumJerkTask";
-    rev = "main";
-    hash = "sha256-z2g0qb31Q1XiY7ruoVpND2dfG/RLJPZXZFIJGI8KAqg=";
+    # Same jrl-cmakemodules git-submodule-as-cmake/ pattern as tvm/tasks/mc-joystick-plugin —
+    # fetchSubmodules requires a real rev, not a branch name.
+    rev = "eb5573e0e0604a04cc2adf7dda9f8d6c6d37474f"; # main as of 2026-08-04
+    fetchSubmodules = true;
+    hash = "sha256-n2gYtqNWlyuP6OIFuFVBXjrXusZ2p3lRQ7ccI7l/AFU=";
   };
 
   buildInputs = [ jrl-cmakemodulesv2 ];

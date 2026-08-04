@@ -21,6 +21,7 @@
         packages = {
           mc-residual-estimation = ./pkgs/mc-residual-estimation.nix;
           minimum-jerk-task = ./pkgs/minimum-jerk-task.nix;
+          rokubimini-description = ./pkgs/rokubimini-description.nix;
         };
 
         overrideAttrs = {
@@ -38,38 +39,50 @@
               };
             };
 
+          # mc_rtc@topic/second-order-velocity-damper is developed against this Tasks branch
+          # (jrl-umi3218/Tasks@v1.8.4, currently pinned in mc-rtc/nixpkgs, is missing
+          # setExternalTorques and has older constructor signatures for MotionConstr /
+          # DamperJointLimitsConstr / MotionSpringConstr).
+          tasks =
+            { pkgs-final, ... }:
+            {
+              # This branch predates the newer jrl-cmakemodules fallback logic upstream added in
+              # v1.8.4 (find_package/FetchContent if missing) — it unconditionally
+              # include()s cmake/base.cmake from a git submodule, so fetchSubmodules is required.
+              src = pkgs-final.fetchFromGitHub {
+                owner = "mathieu-celerier";
+                repo = "Tasks";
+                # fetchSubmodules requires a real rev, not a branch name (same ambiguity issue
+                # as tvm above).
+                rev = "652cf3c7796f7f9cffd9547b637a72e5659c3b46"; # topic/closed-loop-velocity-damper as of 2026-08-04
+                fetchSubmodules = true;
+                hash = "sha256-/uT867ArLNE3gLFO7qIzGuxUyQYuF7j1dWYQBU6PiwI=";
+              };
+            };
+
+          # No src override: mc-rtc-kinova-base's mc-kinova is already on main, which is a
+          # superset of the old topic/bota_ft_sensor branch (unified gen3.in.xacro compatible
+          # with Kinovarobotics/ros2_kortex's load_robot signature, whereas
+          # topic/bota_ft_sensor's own gen3_w_bota_FT_sensor.in.xacro is stale and calls
+          # load_robot with a "sim" param that macro no longer accepts). main's CMakeLists.txt
+          # auto-toggles WITH_BOTA_SENSOR based on whether rokubimini_description is found
+          # (find_description_package(rokubimini_description OPTIONAL)), so all we need here is
+          # to add rokubimini-description as a propagated dependency.
           mc-kinova =
-            { pkgs-final, ... }:
+            { pkgs-final, drv-prev, ... }:
             {
-              src = pkgs-final.fetchFromGitHub {
-                owner = "mathieu-celerier";
-                repo = "mc_kinova";
-                rev = "topic/bota_ft_sensor";
-                hash = "sha256-bd/vlwuU8imEkZFCpau9zCm87CjK+4XAajk3eruJyNk=";
-              };
+              propagatedBuildInputs = (drv-prev.propagatedBuildInputs or [ ]) ++ [
+                pkgs-final.rokubimini-description
+              ];
             };
 
-          mc-kortex =
-            { pkgs-final, ... }:
-            {
-              src = pkgs-final.fetchFromGitHub {
-                owner = "mathieu-celerier";
-                repo = "mc_kortex";
-                rev = "torqueModeDS";
-                hash = "sha256-jAV61GdZKx9i9f2qHJznif44nYDmwbzRCFeTqw+n+9g=";
-              };
-            };
+          # No override: torqueModeDS is a stale/old topic branch (user's call) — the
+          # external-forces stack just uses mc-rtc-kinova-base's main-branch mc-kortex as-is.
 
-          kinova-mj-description =
-            { pkgs-final, ... }:
-            {
-              src = pkgs-final.fetchFromGitHub {
-                owner = "mathieu-celerier";
-                repo = "kinova_mj_description";
-                rev = "bota_ft_sensor";
-                hash = "sha256-Ig+JlYapZ15SWm3q71T/jA7jO3tqyEBA3lqXUK9cMUo=";
-              };
-            };
+          # No override: same story as mc-kinova above — mc-rtc-kinova-base's main-branch
+          # kinova-mj-description already includes the Bota-sensor xml/mc_mujoco variants
+          # (kinova_bota.xml, kinova_bota_ds4.xml etc.); bota_ft_sensor is the same kind of
+          # stale topic branch as mc_kortex's torqueModeDS.
 
           tvm =
             { pkgs-final, ... }:
@@ -94,11 +107,13 @@
           mc-joystick-plugin =
             { pkgs-final, ... }:
             {
+              # Same jrl-cmakemodules git-submodule-as-cmake/ pattern as tvm/tasks above.
               src = pkgs-final.fetchFromGitHub {
                 owner = "bastien-muraccioli";
                 repo = "mc_joystick_plugin";
-                rev = "main";
-                hash = "sha256-MIPU0M17ZM3o/2dKnnVMqr2hF0hUgjlB10Gks3qSewc=";
+                rev = "2a9dfb2ae58c3013a182c3c9807bf3c9a46da84f"; # main as of 2026-08-04
+                fetchSubmodules = true;
+                hash = "sha256-uPd2+gwCr87H8Tfd+aINSxCzhxzTkH3MK1gVt4/VGfU=";
               };
             };
         };

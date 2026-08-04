@@ -13,8 +13,8 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "mathieu-celerier";
     repo = "mc_residual_estimation";
-    rev = "main";
-    hash = "sha256-w5Mxd1MjOxvah3JUxV7yk7rDqKj/od3KvpWdMjFT8og=";
+    rev = "topic/HumanoidResidual_new_implementation";
+    hash = "sha256-rzWtNE4mJ73dX+gTR9hdQDTmHlLMMl+8nwJ7KwbA/Nk=";
   };
 
   nativeBuildInputs = [ cmake ];
