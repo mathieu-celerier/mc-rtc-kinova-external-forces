@@ -22,6 +22,7 @@
           mc-residual-estimation = ./pkgs/mc-residual-estimation.nix;
           minimum-jerk-task = ./pkgs/minimum-jerk-task.nix;
           rokubimini-description = ./pkgs/rokubimini-description.nix;
+          box-demo-controller = ./pkgs/box-demo-controller.nix;
         };
 
         overrideAttrs = {
