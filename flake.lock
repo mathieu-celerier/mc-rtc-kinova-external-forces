@@ -725,11 +725,11 @@
         "mc-rtc-nix": "mc-rtc-nix"
       },
       "locked": {
-        "lastModified": 1785830845,
-        "narHash": "sha256-cAtwV/fmGwlvt1QehjdgI7CULQf0vfMwM7PSl1wx2qw=",
+        "lastModified": 1785833727,
+        "narHash": "sha256-6B6jxoCmUGHWUQP5680ZWxnjqxFHiEnlG++HwiCLz14=",
         "owner": "mathieu-celerier",
         "repo": "mc-rtc-kinova-base",
-        "rev": "64cff5790b846e4e45cd087099ef9e33b240ad90",
+        "rev": "ee2c3c04c69c6f4f5bef200435f5c8631fc3c42f",
         "type": "github"
       },
       "original": {

@@ -74,11 +74,18 @@
           tvm =
             { pkgs-final, ... }:
             {
+              # tvm vendors google/benchmark etc as git submodules (3rd-party/CMakeLists.txt
+              # add_subdirectory()'s them) — fetchFromGitHub needs fetchSubmodules or those
+              # directories come back empty and CMake configure fails.
               src = pkgs-final.fetchFromGitHub {
                 owner = "bastien-muraccioli";
                 repo = "tvm";
-                rev = "master";
-                hash = "sha256-oBTujHdyqHr8rUSM8F42W60EX4hk05UrRTBEGrHzhKw=";
+                # fetchSubmodules requires a real rev, not a branch name (a bare branch name is
+                # ambiguous once fetchFromGitHub switches to the git-based fetch path needed for
+                # submodules, and it errors trying refs/tags/<name> first).
+                rev = "62aacd80d49a11e2d56dd3a7dcf712340f7f6b68"; # master as of 2026-08-04
+                fetchSubmodules = true;
+                hash = "sha256-wAL3wz/s3NoL1CDDDRhEz6JCZH7ygKIZGkcydRyS+eU=";
               };
             };
 
