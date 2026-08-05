@@ -3,18 +3,26 @@ let
   # mc_mujoco's own top-level CMakeLists.txt reads this exact version and (absent
   # -DMUJOCO_ROOT_DIR) tries to FetchContent-download the matching official release tarball at
   # configure time, which the sandboxed build can't do — fetch it ourselves and pass it in.
-  # nixpkgs' own `mujoco` package (3.8.1 as of this writing) is a newer major/minor than this
-  # branch's MUJOCO_VERSION file (3.3.6); rather than assume API compatibility, fetch the exact
-  # version this branch was written against.
-  mujocoVersion = "3.3.6";
+  # nixpkgs' own `mujoco` package (3.8.1 as of this writing) is a newer major/minor than what we
+  # want here, so fetch a specific release.
+  #
+  # 3.6.0, NOT the 3.3.6 in mc_mujoco's own MUJOCO_VERSION file. That file is only a fallback:
+  # mc-rtc-superbuild overrides it (extensions/simulation/MuJoCo.cmake:1 sets MUJOCO_VERSION
+  # 3.6.0 and passes MUJOCO_ROOT_DIR in), so the working setup builds this same mc_mujoco rev
+  # against 3.6.0. Building it against 3.3.6 here made this the only remaining difference in the
+  # simulation stack, while a torque-controlled Kinova showed a slowly-growing null-space
+  # oscillation in the unlimited joints (0/2/4/6) that the same controller does not exhibit on
+  # the superbuild machine. MuJoCo changed integrator defaults and armature handling across 3.x,
+  # which is exactly the kind of thing that moves a marginal mode across the stability boundary.
+  mujocoVersion = "3.6.0";
   mujocoRelease = pkgs-final.fetchzip {
     url = "https://github.com/google-deepmind/mujoco/releases/download/${mujocoVersion}/mujoco-${mujocoVersion}-linux-x86_64.tar.gz";
-    # The tarball wraps everything in a mujoco-3.3.6/ directory — strip exactly that single
+    # The tarball wraps everything in a mujoco-3.6.0/ directory — strip exactly that single
     # wrapping level, giving bin/include/lib/... directly at this derivation's root (needed so
     # it lines up with simulate/, merged in below from a separately-fetched source, which
     # fetchFromGitHub already returns unwrapped).
     stripRoot = true;
-    hash = "sha256-jZlJicqmmo14D4zJ6LiEnRsUdVnVI6j9ZNfchtEPplI=";
+    hash = "sha256-AjM02Y02b4CAb36CGl5wNOKdrUXjX5yghViACYU9dwc=";
   };
   # The binary release above only has bin/include/lib/doc — no simulate/ dir. mc_mujoco's own
   # src/CMakeLists.txt falls through several MUJOCO_ROOT_DIR-relative locations for the
@@ -25,7 +33,7 @@ let
     owner = "google-deepmind";
     repo = "mujoco";
     rev = mujocoVersion;
-    hash = "sha256-6lZ36XFMsjzck/ouSSiX47+dxbEzXgrMhw1Mi3PEnq4=";
+    hash = "sha256-Gxr8AH9grTjrMTHHOVseLuTC3rNuQEZRWhSvR4HgIc4=";
   };
   mujocoRoot = pkgs-final.runCommand "mujoco-${mujocoVersion}-root" { } ''
     mkdir -p "$out"
